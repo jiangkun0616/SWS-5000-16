@@ -79,18 +79,19 @@ void SetNVIC(void)
   NVIC_InitTypeDef NVIC_InitStructure;
   NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
 
-    //配置UART2中断 - 上位机通信RS485，
-  NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;//USART2_IRQChannel;
-  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;//0
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; 
-  NVIC_Init(&NVIC_InitStructure);       
-  //配置TIM2中断  - 上位机通信RS485，帧判断
+  //配置TIM6中断  - 上位机通信RS485，帧判断
   NVIC_InitStructure.NVIC_IRQChannel = TIM6_IRQn;
   NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
+  
+  //配置UART2中断 - 上位机通信RS485，
+  NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;//USART2_IRQChannel;
+  NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;//0
+  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE; 
+  NVIC_Init(&NVIC_InitStructure);       
   
   //配置TIM3中断 - UFP_PWM
   NVIC_InitStructure.NVIC_IRQChannel = TIM5_IRQn;
@@ -100,7 +101,7 @@ void SetNVIC(void)
   NVIC_Init(&NVIC_InitStructure);
  
   //配置TIM4中断  BPP_PWM
-  NVIC_InitStructure.NVIC_IRQChannel = TIM8_TRG_COM_IRQn;
+  NVIC_InitStructure.NVIC_IRQChannel = TIM8_UP_IRQn;
   NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 4;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;

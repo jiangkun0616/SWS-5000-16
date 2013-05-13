@@ -8,6 +8,7 @@
 #ifndef __SWSBUS_H
 #define __SWSBUS_H
 
+
 //用户可配置，可根据需要更改
 #define   RS485_TIM       TIM6                 //RS485使用TIM
 #define   RS485_USART     USART2               //RS485使用串口

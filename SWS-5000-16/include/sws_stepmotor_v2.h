@@ -25,9 +25,9 @@
 //#define MOTOR_TOP_CHECK_EN            //到顶检测有效
 #define MOTOR_BOTTOM_CHECK_EN         //到底检测有效
 //#define MOTOR_BRAKING_EN              //强制刹车(泵盖等检测)有效
-//#define MOTOR_REALSPEED_CHECK_EN      //马达真实转速检测有效(检测方式为霍尔或编码盘)
-//#define MOTOR_PWM_IRQ_EN              //配置PWM的TIM中断有效，主要用于流量脉冲累计
-//#define MOTOR_PWM_LOCKROTOR_CHECK_EN  //在PWM中断检测堵转有效(条件：MOTOR_REALSPEED_CHECK_EN和MOTOR_PWM_IRQ_EN必须有效)
+#define MOTOR_REALSPEED_CHECK_EN      //马达真实转速检测有效(检测方式为霍尔或编码盘)
+#define MOTOR_PWM_IRQ_EN              //配置PWM的TIM中断有效，主要用于流量脉冲累计
+#define MOTOR_PWM_LOCKROTOR_CHECK_EN  //在PWM中断检测堵转有效(条件：MOTOR_REALSPEED_CHECK_EN和MOTOR_PWM_IRQ_EN必须有效)
 
 
 /*************定义步进脉冲的TIM系数****************
@@ -66,10 +66,16 @@ typedef struct
     u8  RunSta_Brak; //暂存强制制动(泵盖等)前泵的工作状态,待取消强制制动后,自动恢复运行
     u8  LockRotor;   //堵转：1=堵转报警,0=正常
     u32 Flow;        //流量累计(PWM脉冲(中断)累计)
+    u32 Pluse;       //脉冲个数，jk
     u32 FlowLockRotor;   //堵转检测用的PWM脉冲计数
     u32 LockRotorSpeed;  //堵转检测用的实际转速检测计数，即编码盘或HALL信号
     float RealSpeed;       //真实转速(rpm) - 通过转速检测信号实测得到的转速
     u32   RealPulse;       //真实转速脉冲累计，用于计算真实转速，每分钟清0一次
+    u8  RatioSwitch;      //泵管系数测试开关
+    u8  Down_Mode;        //下行运转模式(00正常,01管路安装,10泵管系数测试，11自检模式)
+    u8  Up_Mode;
+    u16  Ratio;            //泵管系数ml/R
+    u16  SetFlow;          //设定流量(0~100ml/h*10)放大10倍
 }StepMotor_WorkInfo_Def;
 
 /**************** 系统中使用的步进电机泵的枚举定义 - 根据实际个数修改，最多为6个 *******************/
@@ -86,10 +92,10 @@ typedef enum
 
 /**************** 旋转编码器的齿数,即每转的脉冲数  --可修改, 未使用的定义为1 **********/
   
-#define  MOTOR1_ENCODER     4    // 
-#define  MOTOR2_ENCODER     4    //
-#define  MOTOR3_ENCODER     4    // 
-#define  MOTOR4_ENCODER     4    // 
+#define  MOTOR1_ENCODER     1    // 
+#define  MOTOR2_ENCODER     1    //
+#define  MOTOR3_ENCODER     1    // 
+#define  MOTOR4_ENCODER     1    // 
 #define  MOTOR5_ENCODER     16    // 
 #define  MOTOR6_ENCODER     1     //
 

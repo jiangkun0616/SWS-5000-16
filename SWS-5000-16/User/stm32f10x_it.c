@@ -193,19 +193,7 @@ void USART1_IRQHandler(void)
 {  
 
 }
-/*******************************************************************************
-* Function Name  : TIM2_IRQHandler
-* Description    : This function handles TIM2 global interrupt request.
-* Input          : None
-* Output         : None
-* Return         : None
-*       USART2(ÉÏÎ»»úÍ¨ÐÅ)µÄÖ¡³¬Ê±
-*******************************************************************************/
-void TIM2_IRQHandler(void)
-{
- TIM_IRQ();
-   
-}
+
 /*******************************************************************************
 * Function Name  : USART2_IRQHandler
 * Description    : This function handles USART2 global interrupt request.
@@ -219,8 +207,21 @@ void USART2_IRQHandler(void)
   USART_IRQ();
 }
 /*******************************************************************************
+* Function Name  : TIM2_IRQHandler 
+* Description    : ²¹Òº±Ã This function handles TIM2 global interrupt request.
+* Input          : None
+* Output         : None
+* Return         : None
+*       AP_PWM
+*******************************************************************************/
+void TIM2_IRQHandler(void)
+{
+
+   StepMotor_PWM_TIM_IRQ(SBP);
+}
+/*******************************************************************************
 * Function Name  : TIM3_IRQHandler
-* Description    : This function handles TIM2 global interrupt request.
+* Description    : ¸ÎËØ±Ã This function handles TIM3 global interrupt request.
 * Input          : None
 * Output         : None
 * Return         : None
@@ -229,11 +230,11 @@ void USART2_IRQHandler(void)
 void TIM3_IRQHandler(void)
 {
 
-   StepMotor_PWM_TIM_IRQ(UFP);
+   StepMotor_PWM_TIM_IRQ(HP);
 }
 /*******************************************************************************
 * Function Name  : TIM4_IRQHandler
-* Description    : This function handles TIM2 global interrupt request.
+* Description    : ¹¦ÄÜ±Ã This function handles TIM2 global interrupt request.
 * Input          : None
 * Output         : None
 * Return         : None
@@ -241,32 +242,73 @@ void TIM3_IRQHandler(void)
 *******************************************************************************/
 void TIM4_IRQHandler(void)
 {
-  StepMotor_PWM_TIM_IRQ(HP);
+  StepMotor_PWM_TIM_IRQ(SFP);
 }
+
 /*******************************************************************************
-* Function Name  : EXTI0_IRQHandler
-* Description    : 
+* Function Name  : TIM5_IRQHandler
+* Description    : ³¬ÂË±Ã This function handles TIM2 global interrupt request.
 * Input          : None
 * Output         : None
 * Return         : None
-*       BP-HALL
+*       BP_PWM
 *******************************************************************************/
-void EXTI0_IRQHandler(void) 
-{ 
-  StepMotor_EXTI_IRQ(HP);    
-} 
+void TIM5_IRQHandler(void)
+{
+  StepMotor_PWM_TIM_IRQ(UFP);
+}
+
 /*******************************************************************************
-* Function Name  : EXTI0_IRQHandler
-* Description    : 
+* Function Name  : TIM6_IRQHandler
+* Description    : This function handles TIM6 global interrupt request.
+* Input          : None
+* Output         : None
+* Return         : None
+*       USART2(ÉÏÎ»»úÍ¨ÐÅ)µÄÖ¡³¬Ê±
+*******************************************************************************/
+void TIM6_IRQHandler(void)
+{
+ TIM_IRQ();
+   
+}
+/*******************************************************************************
+* Function Name  : TIM8_IRQHandler
+* Description    : Ñª½¬±Ã This function handles TIM2 global interrupt request.
+* Input          : None
+* Output         : None
+* Return         : None
+*       BP_PWM
+*******************************************************************************/
+void TIM8_UP_IRQHandler(void)
+{
+  StepMotor_PWM_TIM_IRQ(BPP);
+}
+
+/*******************************************************************************
+* Function Name  : EXTI9_IRQHandler
+* Description    : ²¹Òº±Ã,³¬ÂË±Ã
 * Input          : None
 * Output         : None
 * Return         : None
 *       AP-HALL
 *******************************************************************************/
-void EXTI1_IRQHandler(void) 
+void EXTI9_5_IRQHandler(void) 
 { 
-  StepMotor_EXTI_IRQ(UFP);    
+  StepMotor_EXTI_IRQ(SBP);    //EXTI8
+  StepMotor_EXTI_IRQ(UFP);    //EXTI9
+} 
+/*******************************************************************************
+* Function Name  : EXTI10_IRQHandler
+* Description    : Ñª½¬±Ã,¹¦ÄÜ±Ã,¸ÎËØ±Ã
+* Input          : None
+* Output         : None
+* Return         : None
+*       AP-HALL
+*******************************************************************************/
+void EXTI15_10_IRQHandler(void) 
+{ 
+  StepMotor_EXTI_IRQ(BPP);    // EXTI10
+  StepMotor_EXTI_IRQ(SFP);   // EXTI11
+  StepMotor_EXTI_IRQ(HP);    // EXTI12
 } 
 
-
-/******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/

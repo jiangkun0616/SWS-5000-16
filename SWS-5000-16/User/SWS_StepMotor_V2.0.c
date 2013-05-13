@@ -37,11 +37,11 @@ void StepMotor_Init(void)
   
   for(i = 0; i < MOTOR_TOTAL; i++)  //清空工作状态
   {
-    StepMotor_Data[i].Enable = ENABLE;
+    StepMotor_Data[i].Enable = DISABLE;
     StepMotor_Data[i].Status = DISABLE;  //正常应初始化为DISABLE，这里初始化为ENABLE的目的是让处理程序释放电机
     StepMotor_Data[i].SetDir = 0;
     StepMotor_Data[i].OldDir = 0;
-    StepMotor_Data[i].SetSpeed = 150;
+    StepMotor_Data[i].SetSpeed = 0;
     StepMotor_Data[i].CurrSpeed = 0;
     StepMotor_Data[i].ToBottom = 0;
     StepMotor_Data[i].ToTop = 0;
@@ -51,8 +51,13 @@ void StepMotor_Init(void)
     StepMotor_Data[i].RunSta_Brak = 0;
     StepMotor_Data[i].LockRotor = 0;
     StepMotor_Data[i].Flow = 0;
+    StepMotor_Data[i].Pluse = 0;
     StepMotor_Data[i].LockRotorSpeed = 0;
     StepMotor_Data[i].FlowLockRotor = 0;
+    StepMotor_Data[i].RatioSwitch = 0; 
+    StepMotor_Data[i].Down_Mode = 0; 
+    StepMotor_Data[i].Ratio = 0; 
+    StepMotor_Data[i].SetFlow = 0;
   }
   
   for(i = 0; i < MOTOR_TOTAL; i++) //配置GPIO
@@ -776,7 +781,7 @@ void StepMotor_BOTTOM_Read(StepMotor_TypeDef Motorx)
         else
         { cnt[Motorx] = 0; }
       }
-      if((StepMotor_Data[Motorx].ToBottom==1)&&(StepMotor_Data[Motorx].SetDir==0)) //到底且正转，则关闭电机
+      if((StepMotor_Data[Motorx].ToBottom==1)&&(StepMotor_Data[Motorx].SetDir==0)&&(Motorx!=4)) //到底且正转，则关闭电机，肝素泵除外
         {StepMotor_Data[Motorx].Enable = DISABLE; } 
      }
   }
@@ -938,7 +943,8 @@ void StepMotor_Work_Control(void)
   for(mi = 0; mi < MOTOR_TOTAL; mi++)   //轮询各个泵
   {
     adjsta = 0;
-    if(StepMotor_Data[mi].SetSpeed == 0) StepMotor_Data[mi].Enable = DISABLE;
+    if(StepMotor_Data[mi].SetSpeed == 0) 
+      StepMotor_Data[mi].Enable = DISABLE;
     if(StepMotor_Data[mi].Enable == DISABLE) //关机命令
     {
       if(StepMotor_Data[mi].Status != DISABLE)  //此前为开机状态，则执行停机命令
@@ -1032,6 +1038,10 @@ void StepMotor_PWM_TIM_IRQ(StepMotor_TypeDef Motorx)
 #ifdef MOTOR_PWM_LOCKROTOR_CHECK_EN        //判断是否堵转
     StepMotor_Data[Motorx].FlowLockRotor++;
     pulse_encoder = STEPMOTOR_PWMPULSE / ENCODER[Motorx];  //每一个旋转编码器脉冲对应的PWM发出脉冲数 = 12800/齿数
+    if(StepMotor_Data[Motorx].Flow==StepMotor_Data[Motorx].Pluse)    //JK
+    {
+     StepMotor_Data[Motorx].Enable =  DISABLE;
+    }
     if(StepMotor_Data[Motorx].FlowLockRotor > (pulse_encoder + (pulse_encoder >> 1))) //超出每齿脉冲数的50%后判断一次是否堵转
     { //步时脉冲个数超出 标准数量的1.5倍后，判断是否有堵转
       if(StepMotor_Data[Motorx].LockRotorSpeed == 0)

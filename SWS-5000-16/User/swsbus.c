@@ -19,6 +19,7 @@ V2.0:增加4组写命令和读命令
 #include "stm32f10x.h"
 #include "swsbus.h"
 #include "main.h"
+#include "string.h"
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 u8  TxBuffer[TxBufferSize];    //发送数据缓存
@@ -37,7 +38,7 @@ void RS485_Init(void)
   USART_InitTypeDef USART_InitStructure;
   GPIO_InitTypeDef GPIO_InitStructure;
   TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-  TIM_OCInitTypeDef  TIM_OCInitStructure;
+//  TIM_OCInitTypeDef  TIM_OCInitStructure;
   
 /************************  RS485端口及串口配置   ******************************/  
   /* 配置485通信TX端口 */
@@ -68,24 +69,24 @@ void RS485_Init(void)
   RS485_RE;      //485接收使能
   
 /************************  RS485通信定时器配置   ******************************/ 
-  TIM_TimeBaseStructure.TIM_Period = 65535;
-  TIM_TimeBaseStructure.TIM_Prescaler = 0;
+  TIM_TimeBaseStructure.TIM_Period = 4;
+  TIM_TimeBaseStructure.TIM_Prescaler = 7199;
   TIM_TimeBaseStructure.TIM_ClockDivision = 0;
   TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
   TIM_TimeBaseInit(RS485_TIM, &TIM_TimeBaseStructure);
   
   /*Prescaler configuration :*/
-  TIM_InternalClockConfig(RS485_TIM);
-  TIM_PrescalerConfig(RS485_TIM, 0x0E0F, TIM_PSCReloadMode_Immediate);//clock = 10 KHz
+//  TIM_InternalClockConfig(RS485_TIM);
+//  TIM_PrescalerConfig(RS485_TIM, 0x0E0F, TIM_PSCReloadMode_Immediate);//clock = 10 KHz
 
   /* Output Compare Active Mode configuration: Channel1*/
-  TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_Inactive;
-  TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
-  TIM_OCInitStructure.TIM_Pulse = 5;
-  TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
-  TIM_OC1Init(RS485_TIM, &TIM_OCInitStructure);
-  TIM_OC1PreloadConfig(RS485_TIM, TIM_OCPreload_Disable);
-  TIM_Cmd(RS485_TIM, DISABLE);
+//  TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_Inactive;
+//  TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
+//  TIM_OCInitStructure.TIM_Pulse = 5;
+//  TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;
+//  TIM_OC1Init(RS485_TIM, &TIM_OCInitStructure);
+//  TIM_OC1PreloadConfig(RS485_TIM, TIM_OCPreload_Disable);
+//  TIM_Cmd(RS485_TIM, DISABLE);
 }
 
 /*******************************************************************************
@@ -101,8 +102,8 @@ void BUS_DataResponse(void)
   CRC_Result = CRC16(RxBuffer,RxBufferLength);
   if(CRC_Result == 0)   //CRC校验正确结果为0
   {
-     LED_COM_Cnt = 0;
-     //LED_Y_ON;
+    LED_485_ON;        //接收正确一帧数据
+     
     switch(RxBuffer[1]) //根据功能码执行相应功能
     {
     case BUS_INI:       //初始化
@@ -391,6 +392,7 @@ void BUS_DataResponse(void)
 
   /* 清零接收缓冲数组的长度*/
   RxBufferLength= 0;
+  memset(RxBuffer,0,sizeof(RxBuffer));
 }
 
 /*******************************************************************************
@@ -493,8 +495,9 @@ void RS485_SendData(u8 SendDataLength)
 ********************************************************************************/
 void TIM_IRQ(void)
 {
-  TIM_ClearITPendingBit(RS485_TIM, TIM_IT_CC1);//定时中断标志清零
-  TIM_ITConfig(RS485_TIM, TIM_IT_CC1, DISABLE);//中断关闭
+  TIM_ClearITPendingBit(RS485_TIM, TIM_IT_Update);//定时中断标志清零
+  TIM_ITConfig(RS485_TIM, TIM_IT_Update, DISABLE);//中断关闭
+//  USART_Cmd(RS485_USART, DISABLE);   //关串口中断
   if((RxBuffer[0] == LocalAddress) || (RxBuffer[0] == BroadcastAddress))
   {
     BUS_DataResponse();
@@ -502,6 +505,8 @@ void TIM_IRQ(void)
   }
   
   RxBufferLength= 0;
+  memset(RxBuffer,0,sizeof(RxBuffer));
+//  USART_Cmd(RS485_USART, ENABLE);   //开串口中断
   
 }
 /********************************************************************************
@@ -517,18 +522,19 @@ void USART_IRQ(void)
   {  
     USART_ClearITPendingBit(RS485_USART, USART_IT_RXNE);
     RxBuffer[RxBufferLength++] = USART_ReceiveData(RS485_USART);
-    if(RxBufferLength >= RxBufferSize) RxBufferLength = RxBufferSize-1;
+    if(RxBufferLength >= RxBufferSize) 
+      RxBufferLength = RxBufferSize-1;
     
     /*每接收完一个字节数据判断一次间隔时间*/
-    TIM_ClearITPendingBit(RS485_TIM, TIM_IT_CC1); //定时中断标志清零
-    TIM_ITConfig(RS485_TIM, TIM_IT_CC1, ENABLE);  //中断使能
+    TIM_ClearITPendingBit(RS485_TIM, TIM_IT_Update); //定时中断标志清零
+    TIM_ITConfig(RS485_TIM, TIM_IT_Update, ENABLE);  //中断使能
     TIM_SetCounter(RS485_TIM,0);                  //定时器清零
     TIM_Cmd(RS485_TIM, ENABLE);                   //定时器使能
   }
   else if(USART_GetFlagStatus(RS485_USART, USART_FLAG_ORE) != RESET)
   {   //清除ORE(溢出中断)标志
    //USART_ClearFlag(RS485_USART,USART_FLAG_ORE); //读SR其实就是清除标志
-    usartsr = RS485_USART->SR;
+   usartsr = RS485_USART->SR;
    usartsr += USART_ReceiveData(RS485_USART);
   }
 }
