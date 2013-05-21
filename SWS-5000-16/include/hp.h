@@ -17,6 +17,21 @@
 
 extern float CoeffIcient_HP;
 
+#define Correct_Length10 282            //10ml注射器校正圈数(1毫米长度=0.2圈)
+#define Correct_Length20 349            //20ml注射器校正圈数(1毫米长度=0.2圈)
+#define Correct_Length30 378            //30ml注射器校正圈数(1毫米长度=0.2圈)
+#define Correct_Length50 373            //50ml注射器校正圈数(1毫米长度=0.2圈)
+
+#define Correct_Flow10  0.03348     //步进电机一圈流量 ml/r
+#define Correct_Flow20  0.0555
+#define Correct_Flow30  0.0831
+#define Correct_Flow50  0.133
+
+#define   Correct_Length10_B 50      //10mL情况 检测到位后需要推注10mm   
+#define   Correct_Length20_B 45      //20mL情况 检测到位后需要推注9mm
+#define   Correct_Length30_B 47      //30mL情况 检测到位后需要推注9.5mm
+#define   Correct_Length50_B 8       //50mL情况 检测到位后需要推注1.5mm
+
 typedef struct struct_Hp_param  
 {  
   u16 flg;           //2    该数据块是否有效的标志：0x5a5a-有效
@@ -33,11 +48,12 @@ typedef struct HP
   u8 Hall_State;       //霍尔状态
   u8 HP_Type;         //霍尔检测注射器型号
   u8 HP_OrderType;    //上位机下发的注射器型号
-  u8 HP_Compare;       //注射器型号对比
-  u8 HP_Turn;         //到底检测到位后还需要推注的圈数 
+  u8 HP_Compare;       //注射器型号对比结果
+  u16 HP_Turn;         //到底检测到位后还需要推注的圈数 
+  float HP_Flow;
   u8 HP_Length;       //检测到位后需要推注长度
-  u8 HP_Check;       //肝素泵校正
-  u8 Up_Mode;        //肝素泵校正上下模式
+  u8 HP_Check;       //肝素泵校正开关
+  u8 Up_Mode;        //肝素泵校正上行模式
 } HP_Work;
 extern HP_Work HP_Data;
 
@@ -47,6 +63,6 @@ extern HP_Work HP_Data;
 #define  SyringeMode_S2  GPIO_ReadInputDataBit(GPIOD,GPIO_Pin_0) //注射器型号检测 PD0
 #define  SyringeMode_S3  GPIO_ReadInputDataBit(GPIOC,GPIO_Pin_11) //注射器型号检测 PC11
 
-extern void HP_Check();
+extern void HP_CheckInfo();
 extern void Syringe_Type();
 #endif 

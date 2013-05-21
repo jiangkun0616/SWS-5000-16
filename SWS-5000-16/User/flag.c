@@ -49,8 +49,18 @@ void Down_flag()
      StepMotor_Data[SFP].Enable = DISABLE; 
     }
     
-    StepMotor_Data[SFP].Down_Mode = (0x03 & BUS_Buffer.WR1[1]); //运转模式  
-    StepMotor_Data[SFP].Flow = ((0x20 & BUS_Buffer.WR1[1]) >> 5);  //0流量累计，1流量归零
+    StepMotor_Data[SFP].Down_Mode = (0x03 & BUS_Buffer.WR1[1]); //运转模式
+    if(1==StepMotor_Data[SFP].Down_Mode)   //管路安装模式
+    {
+      StepMotor_Data[SFP].TestMode = ENABLE;
+      StepMotor_Data[SFP].SetSpeed = INSTALL_Speed;
+      StepMotor_Data[SFP].TestNum = INSTALL_Count;
+      StepMotor_Data[SFP].Flow = 0;
+    }
+    if(((0x20 & BUS_Buffer.WR1[1]) >> 5))  //0流量累计，1流量归零
+    {
+      StepMotor_Data[SFP].Flow = 0;
+    }
     StepMotor_Data[SFP].RatioSwitch = ((0x10 & BUS_Buffer.WR1[1]) >> 4); //泵管系数测试开关
     
     StepMotor_Data[SFP].Ratio = BUS_Buffer.WR1[4]*0x100+BUS_Buffer.WR1[3];  //泵管系数 （ml/R）
@@ -70,8 +80,18 @@ void Down_flag()
     {
      StepMotor_Data[SBP].Enable = DISABLE; 
     }
-    StepMotor_Data[SBP].Down_Mode = (0x03 & BUS_Buffer.WR2[1]); //运转模式  
-    StepMotor_Data[SBP].Flow = ((0x20 & BUS_Buffer.WR2[1]) >> 5);  //0累计，1累计归零
+    StepMotor_Data[SBP].Down_Mode = (0x03 & BUS_Buffer.WR2[1]); //运转模式 
+    if(1==StepMotor_Data[SBP].Down_Mode)   //管路安装模式
+    {
+      StepMotor_Data[SBP].TestMode = ENABLE;
+      StepMotor_Data[SBP].SetSpeed = INSTALL_Speed;
+      StepMotor_Data[SBP].TestNum = INSTALL_Count;
+      StepMotor_Data[SBP].Flow = 0;
+    }
+    if(((0x20 & BUS_Buffer.WR2[1]) >> 5))  //0累计，1累计归零
+    {
+      StepMotor_Data[SBP].Flow = 0;
+    }
     StepMotor_Data[SBP].RatioSwitch = ((0x10 & BUS_Buffer.WR2[1]) >> 4); //泵管系数测试开关
     
     StepMotor_Data[SBP].Ratio = BUS_Buffer.WR2[4]*0x100+BUS_Buffer.WR2[3];  //泵管系数
@@ -91,8 +111,20 @@ void Down_flag()
     {
      StepMotor_Data[UFP].Enable = DISABLE; 
     }
-    StepMotor_Data[UFP].Down_Mode = (0x03 & BUS_Buffer.WR3[1]); //运转模式  
-    StepMotor_Data[UFP].Flow = ((0x20 & BUS_Buffer.WR3[1]) >> 5);  //0累计，1累计归零
+    StepMotor_Data[UFP].Down_Mode = (0x03 & BUS_Buffer.WR3[1]); //运转模式 
+    if(1==StepMotor_Data[UFP].Down_Mode)   //管路安装模式
+    {
+      StepMotor_Data[UFP].TestMode = ENABLE;
+      StepMotor_Data[UFP].SetSpeed = INSTALL_Speed;
+      StepMotor_Data[UFP].TestNum = INSTALL_Count;
+      StepMotor_Data[UFP].Flow = 0;
+      
+    }
+    
+    if(((0x20 & BUS_Buffer.WR3[1]) >> 5))  //0累计，1累计归零
+    {
+      StepMotor_Data[UFP].Flow = 0;
+    }
     StepMotor_Data[UFP].RatioSwitch = ((0x10 & BUS_Buffer.WR3[1]) >> 4); //泵管系数测试开关
     
     StepMotor_Data[UFP].Ratio = BUS_Buffer.WR3[4]*0x100+BUS_Buffer.WR3[3];  //泵管系数
@@ -113,8 +145,18 @@ void Down_flag()
      StepMotor_Data[BPP].Enable = DISABLE; 
     }
     
-    StepMotor_Data[BPP].Down_Mode = (0x03 & BUS_Buffer.WR4[1]); //运转模式  
-    StepMotor_Data[BPP].Flow = ((0x20 & BUS_Buffer.WR4[1]) >> 5);  //0累计，1累计归零
+    StepMotor_Data[BPP].Down_Mode = (0x03 & BUS_Buffer.WR4[1]); //运转模式 
+    if(1==StepMotor_Data[BPP].Down_Mode)   //管路安装模式
+    {
+      StepMotor_Data[BPP].TestMode = ENABLE;
+      StepMotor_Data[BPP].SetSpeed = INSTALL_Speed;
+      StepMotor_Data[BPP].TestNum = INSTALL_Count;
+      StepMotor_Data[BPP].Flow = 0;
+    }
+    if(((0x20 & BUS_Buffer.WR4[1]) >> 5))  //0累计，1累计归零
+    {
+      StepMotor_Data[BPP].Flow=0;
+    }
     StepMotor_Data[BPP].RatioSwitch = ((0x10 & BUS_Buffer.WR4[1]) >> 4); //泵管系数测试开关
     
     StepMotor_Data[BPP].Ratio = BUS_Buffer.WR4[4]*0x100+BUS_Buffer.WR4[3];  //泵管系数
@@ -136,22 +178,24 @@ void Down_flag()
     }
     StepMotor_Data[HP].SetDir = ((0x04 & BUS_Buffer.WR5[1]) >> 2); // 0顺时针 正转，1反转
     StepMotor_Data[HP].Down_Mode = (0x03 & BUS_Buffer.WR5[1]); //运转模式  
-    StepMotor_Data[HP].Flow = ((0x20 & BUS_Buffer.WR5[1]) >> 5);  //0累计，1累计归零
-    
+    if(((0x20 & BUS_Buffer.WR5[1]) >> 5))  //0累计，1累计归零
+    {
+      StepMotor_Data[HP].Flow = 0;
+    }
     StepMotor_Data[HP].SetFlow = BUS_Buffer.WR5[5]*0x100+BUS_Buffer.WR5[4];//目标推注流量（ml/h）
   }
   
   if(1==NEW_CMD2_HP)      //肝素泵校正
   {
     NEW_CMD2_HP = 0;
-    HP_Data.HP_Check=BUS_Buffer.WR6[1]>>7;    //肝素泵校正命令
+    HP_Data.HP_Check=((0x80&BUS_Buffer.WR6[1])>>7);    //肝素泵校正命令
     if(HP_Data.HP_Check)
     {
      StepMotor_Data[HP].Enable = ENABLE; 
      StepMotor_Data[HP].Down_Mode = HP_CORRECT;  //校正模式
     }
     HP_Data.HP_OrderType = BUS_Buffer.WR6[2];        //注射器型号
-    if(HP_Data.HP_OrderType!=HP_Data.Hall_State)     //注射器型号对比
+    if(HP_Data.HP_OrderType!=HP_Data.HP_Type)     //注射器型号对比
     {
       HP_Data.HP_Compare = 0x01;  
     }
@@ -250,10 +294,10 @@ void Up_flag()
   BUS_Buffer.RD3[10]=BUS_Buffer.WR3[5];     //  ml/m
   BUS_Buffer.RD3[9]=BUS_Buffer.WR3[4];      //  ml/r
   BUS_Buffer.RD3[8]=BUS_Buffer.WR3[3];        
-  BUS_Buffer.RD3[7]=StepMotor_Data[UFP].Flow/0x1000000;       //已推注总量高字节
-  BUS_Buffer.RD3[6]=StepMotor_Data[UFP].Flow/0x10000%0x100;   //已推注总量高字节
-  BUS_Buffer.RD3[5]=StepMotor_Data[UFP].Flow/0x100%0x100;     //已推注总量低字节
-  BUS_Buffer.RD3[4]=StepMotor_Data[UFP].Flow%0x100;   
+  BUS_Buffer.RD3[7]=(StepMotor_Data[UFP].Flow/STEPMOTOR_PWMPULSE)/0x1000000;       //已推注总量高字节
+  BUS_Buffer.RD3[6]=(StepMotor_Data[UFP].Flow/STEPMOTOR_PWMPULSE)/0x10000%0x100;   //已推注总量高字节
+  BUS_Buffer.RD3[5]=(StepMotor_Data[UFP].Flow/STEPMOTOR_PWMPULSE)/0x100%0x100;     //已推注总量低字节
+  BUS_Buffer.RD3[4]=(StepMotor_Data[UFP].Flow/STEPMOTOR_PWMPULSE)%0x100;   
   BUS_Buffer.RD3[3]=(u8)(StepMotor_Data[UFP].SetSpeed/0x100);                   //目标转速高字节
   BUS_Buffer.RD3[2]=(u8)((u16)StepMotor_Data[UFP].SetSpeed%0x100);                   //目标转速低字节 
   BUS_Buffer.RD3[0]=(StepMotor_Data[UFP].Up_Mode<<4)|(StepMotor_Data[UFP].Status<<3)|(StepMotor_Data[UFP].LockRotor<<1)|(StepMotor_Data[UFP].RunSta_Brak<<1);      
@@ -307,13 +351,12 @@ void Motor_Run_Mode()
   {
     case NORMAL_RUN:     //正常运转
       {      
-        StepMotor_Data[SFP].SetSpeed = (BUS_Buffer.WR1[6]*0x100+BUS_Buffer.WR1[5])/(BUS_Buffer.WR1[4]*0x100+BUS_Buffer.WR1[3]);
+        StepMotor_Data[SFP].SetSpeed = StepMotor_Data[SFP].SetFlow/StepMotor_Data[SFP].Ratio;  //流量除以泵管系数
       }
       break;
     case SLOW_RUN:      //管路安装缓动 给固定目标转速
       { 
-        StepMotor_Data[SFP].SetSpeed = INSTALL_Speed;
-        StepMotor_Data[SFP].Pluse = INSTALL_Count;
+
       }
       break;
     case C_TEST:       //泵管系数测试
@@ -353,13 +396,12 @@ void Motor_Run_Mode()
   {
     case NORMAL_RUN:     //正常运转
       {      
-      StepMotor_Data[SBP].SetSpeed = (BUS_Buffer.WR2[6]*0x100+BUS_Buffer.WR2[5])/(BUS_Buffer.WR2[4]*0x100+BUS_Buffer.WR2[3]);   // rpm/min
+      StepMotor_Data[SBP].SetSpeed = StepMotor_Data[SBP].SetFlow/StepMotor_Data[SBP].Ratio;   // rpm/min
       }
       break;
     case SLOW_RUN:      //管路安装缓动 给固定目标转速
       {
-        StepMotor_Data[SBP].SetSpeed = INSTALL_Speed;
-        StepMotor_Data[SBP].Pluse = INSTALL_Count;
+
       }
       break;
     case C_TEST:       //泵管系数测试
@@ -397,13 +439,12 @@ void Motor_Run_Mode()
   {
     case NORMAL_RUN:     //正常运转
       {      
-      StepMotor_Data[UFP].SetSpeed = (BUS_Buffer.WR3[6]*0x100+BUS_Buffer.WR3[5])/(BUS_Buffer.WR3[4]*0x100+BUS_Buffer.WR3[3]);
+      StepMotor_Data[UFP].SetSpeed = StepMotor_Data[UFP].SetFlow/StepMotor_Data[UFP].Ratio;
       }
       break;
     case SLOW_RUN:      //管路安装缓动 给固定目标转速
       {
-        StepMotor_Data[UFP].SetSpeed = INSTALL_Speed; 
-        StepMotor_Data[UFP].Pluse = INSTALL_Count;
+
       }
       break;
     case C_TEST:       //泵管系数测试
@@ -441,13 +482,11 @@ void Motor_Run_Mode()
   {
     case NORMAL_RUN:     //正常运转
       {      
-      StepMotor_Data[BPP].SetSpeed = (BUS_Buffer.WR4[6]*0x100+BUS_Buffer.WR4[5])/(BUS_Buffer.WR4[4]*0x100+BUS_Buffer.WR4[3]);
+      StepMotor_Data[BPP].SetSpeed = StepMotor_Data[BPP].SetFlow/StepMotor_Data[BPP].Ratio;
       }
       break;
     case SLOW_RUN:      //管路安装缓动 给固定目标转速
       {
-        StepMotor_Data[BPP].SetSpeed = INSTALL_Speed;
-        StepMotor_Data[BPP].Pluse = INSTALL_Count;
       }
       break;
     case C_TEST:       //泵管系数测试
@@ -480,56 +519,61 @@ void Motor_Run_Mode()
      
   }
   
-//  switch(StepMotor_Data[HP].Down_Mode)    // 肝素泵
-//  {
-//    case HP_NORMAL_RUN:     //正常运转
-//      {      
-//        StepMotor_Data[HP].Enable = ENABLE; 
-//        StepMotor_Data[HP].SetSpeed = StepMotor_Data[HP].SetFlow*10/CoeffIcient_HP+0.5;   //流量 ml/h 除以 系数 ml/rpm
-//      }
-//      break;
-//    case HP_FAST_FORWARD:      //肝素泵快进模式
-//      {
-//      }
-//      break;
-//    case HP_SELF_TEST:   //肝素泵自检模式
-//      {
-//       StepMotor_Data[HP].Enable = ENABLE;
-//       StepMotor_Data[HP].SetSpeed = HPSELF_Speed;
-//       if(Bottom_HP)       
-//       {
-//         StepMotor_Data[HP].Up_Mode = SELF_TEST_RUNING;   //肝素泵正转自检
-//         StepMotor_Data[HP].SetDir = 1;  //到底后反向
-//         if(1==StepMotor_Data[HP].LockRotor) //反转到达顶端后堵转
-//         {
-//          StepMotor_Data[HP].Enable = DISABLE;
-//          StepMotor_Data[HP].Up_Mode = SELF_TEST_PASS;   //肝素泵自检完成
-//         }
-//       }
-//       if(1==StepMotor_Data[HP].NF)
-//       {
-//          StepMotor_Data[HP].Enable = DISABLE;
-//          StepMotor_Data[HP].Up_Mode = SELF_TEST_ERROR;   //肝素泵自检异常         
-//       }
-//      }
-//      break;
-//  case HP_CORRECT:      //肝素泵校正模式
-//      {
-//        if(HP_Data.HP_OrderType!=HP_Data.HP_Type)
-//        {
-//         HP_Data.Up_Mode = HP_CORRECT_ERROR;   //肝素泵校正异常 
-//        }
-//        else
-//        {
-//         HP_Data.Up_Mode = HP_CORRECT_RUNING;  //肝素泵正在校正
-//        }
-//      }
-//      break;
-//    default:         //泵停止
-//      StepMotor_Data[HP].Status = DISABLE;
-//      break;
-//     
-//  }
+  switch(StepMotor_Data[HP].Down_Mode)    // 肝素泵
+  {
+    case HP_NORMAL_RUN:     //正常运转
+      {      
+        StepMotor_Data[HP].Enable = ENABLE; 
+        StepMotor_Data[HP].SetSpeed = StepMotor_Data[HP].SetFlow/HP_Data.HP_Flow/60;   //流量 ml/h 除以 ml/rpm
+        if(Bottom_HP)   //到底后转的圈数
+        {
+          StepMotor_Data[HP].TestNum = HP_Data.HP_Turn;
+          StepMotor_Data[HP].Flow = 0;
+        }
+      }
+      break;
+    case HP_FAST_FORWARD:      //肝素泵快进模式
+      {
+      }
+      break;
+    case HP_SELF_TEST:   //肝素泵自检模式
+      {
+       StepMotor_Data[HP].Enable = ENABLE;
+       StepMotor_Data[HP].SetSpeed = HPSELF_Speed;
+       if(Bottom_HP)       
+       {
+         StepMotor_Data[HP].Up_Mode = SELF_TEST_RUNING;   //肝素泵正转自检
+         StepMotor_Data[HP].SetDir = 1;  //到底后反向
+         StepMotor_Data[HP].TestNum = 0; //到底后转的圈数
+         if(1==StepMotor_Data[HP].LockRotor) //反转到达顶端后堵转
+         {
+          StepMotor_Data[HP].Enable = DISABLE;
+          StepMotor_Data[HP].Up_Mode = SELF_TEST_PASS;   //肝素泵自检完成
+         }
+       }
+       if(1==StepMotor_Data[HP].NF)
+       {
+          StepMotor_Data[HP].Enable = DISABLE;
+          StepMotor_Data[HP].Up_Mode = SELF_TEST_ERROR;   //肝素泵自检异常         
+       }
+      }
+      break;
+  case HP_CORRECT:      //肝素泵校正模式
+      {
+        if(HP_Data.HP_OrderType!=HP_Data.HP_Type)
+        {
+         HP_Data.Up_Mode = HP_CORRECT_ERROR;   //肝素泵校正异常 
+        }
+        else
+        {
+         HP_Data.Up_Mode = HP_CORRECT_RUNING;  //肝素泵正在校正
+        }
+      }
+      break;
+    default:         
+      break;
+     
+  }
   
 }
 

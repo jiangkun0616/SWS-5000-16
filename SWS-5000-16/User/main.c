@@ -47,7 +47,7 @@ int main(void)
   System_Init();	         //系统初始化
   RS485_Init();
   StepMotor_Init();
-  HP_Check();                   //读取肝素泵校正信息
+  HP_CheckInfo();                   //读取肝素泵校正信息
   
   while(1)
   {

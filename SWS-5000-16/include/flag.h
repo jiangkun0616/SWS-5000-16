@@ -14,7 +14,7 @@
 #define  NEW_CMD2_HP   BUS_Buffer.WR6[0] //新命令标志(1:有新命令，0：没有新命令)
 
 #define INSTALL_Speed   50      //管路安装时泵转速
-#define INSTALL_Count  6400    //管路安装时转半圈
+#define INSTALL_Count  0.5    //管路安装时泵转半圈
 #define SELF_Speed   50        //泵自检时转速
 
 
@@ -28,6 +28,7 @@
 #define SELF_TEST_RUNING    1    //泵正在自检
 #define SELF_TEST_PASS      2    //泵完成自检
 #define SELF_TEST_ERROR     3    //泵自检异常
+
 
 extern void Down_flag();
 extern void Up_flag();

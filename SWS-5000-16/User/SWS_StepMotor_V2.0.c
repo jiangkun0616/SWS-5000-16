@@ -50,8 +50,9 @@ void StepMotor_Init(void)
     StepMotor_Data[i].Braking = 0;
     StepMotor_Data[i].RunSta_Brak = 0;
     StepMotor_Data[i].LockRotor = 0;
+    StepMotor_Data[i].TestMode = 0;
+    StepMotor_Data[i].TestNum = 0;
     StepMotor_Data[i].Flow = 0;
-    StepMotor_Data[i].Pluse = 0;
     StepMotor_Data[i].LockRotorSpeed = 0;
     StepMotor_Data[i].FlowLockRotor = 0;
     StepMotor_Data[i].RatioSwitch = 0; 
@@ -748,8 +749,10 @@ void StepMotor_BOTTOM_Read(StepMotor_TypeDef Motorx)
  #ifdef MOTOR_BOTTOM_CHECK_EN
   GPIO_TypeDef *StepMotor_PORT[6] = {MOTOR1_BOTTOM_PORT,MOTOR2_BOTTOM_PORT,MOTOR3_BOTTOM_PORT,MOTOR4_BOTTOM_PORT,MOTOR5_BOTTOM_PORT,MOTOR6_BOTTOM_PORT};   //端口
   uint16_t   Motor_BOTTOM_PINx[6] = {MOTOR1_BOTTOM_PIN,MOTOR2_BOTTOM_PIN,MOTOR3_BOTTOM_PIN,MOTOR4_BOTTOM_PIN,MOTOR5_BOTTOM_PIN,MOTOR6_BOTTOM_PIN};    //Pin
+  u8         Bottom_Stop[6]  = {MOTOR1_BOTTOM_STOP_EN,MOTOR2_BOTTOM_STOP_EN,MOTOR3_BOTTOM_STOP_EN,MOTOR4_BOTTOM_STOP_EN,MOTOR5_BOTTOM_STOP_EN,MOTOR6_BOTTOM_STOP_EN};
   static u16 cnt[6]={0}; //去抖计数器
-  u8 pinval;
+  u8 pinval,xnew = 0;
+  
   if(StepMotor_PORT[Motorx])
   {  
      if(StepMotor_Data[Motorx].Status == ENABLE) //电机工作时，才检测Bottom信号
@@ -763,10 +766,13 @@ void StepMotor_BOTTOM_Read(StepMotor_TypeDef Motorx)
           if(cnt[Motorx] > STEPMOTOR_IN_DEBOUNCE)
           {
             StepMotor_Data[Motorx].ToBottom = pinval;
+            xnew = 1;  //端口产生新的变化
           }
         }
         else
-        { cnt[Motorx] = 0; }
+        { 
+          cnt[Motorx] = 0; 
+        }
       } 
       else  //GPIO端为低电平到位
       {
@@ -776,13 +782,29 @@ void StepMotor_BOTTOM_Read(StepMotor_TypeDef Motorx)
           if(cnt[Motorx] > STEPMOTOR_IN_DEBOUNCE)
           {
             StepMotor_Data[Motorx].ToBottom = !pinval;
+            xnew = 1;  //端口产生新的变化
           }
         }
         else
-        { cnt[Motorx] = 0; }
+        { 
+          cnt[Motorx] = 0; 
+        }
       }
-      if((StepMotor_Data[Motorx].ToBottom==1)&&(StepMotor_Data[Motorx].SetDir==0)&&(Motorx!=4)) //到底且正转，则关闭电机，肝素泵除外
-        {StepMotor_Data[Motorx].Enable = DISABLE; } 
+      if((StepMotor_Data[Motorx].ToBottom==1)&&(StepMotor_Data[Motorx].SetDir==0)) //到底且正转，则关闭电机，肝素泵除外
+      {
+        if(Bottom_Stop[Motorx] == 1)   //允许到底后自动停泵
+        {
+          StepMotor_Data[Motorx].Enable = DISABLE; 
+        }
+        else    //允许到底后再转一定的圈数再停泵: 使能测试模式
+        {
+          if(xnew == 1)
+          {
+            StepMotor_Data[Motorx].TestMode = 1;
+          }
+        } 
+        
+      }
      }
   }
 #endif
@@ -976,7 +998,8 @@ void StepMotor_Work_Control(void)
       StepMotor_TOP_Read((StepMotor_TypeDef)mi);
       StepMotor_BRAKING_Read((StepMotor_TypeDef)mi);
       
-      if(StepMotor_Data[mi].SetSpeed > STEPMOTOR_MAX_SETSPEED) StepMotor_Data[mi].SetSpeed=STEPMOTOR_MAX_SETSPEED;
+      if(StepMotor_Data[mi].SetSpeed > STEPMOTOR_MAX_SETSPEED) 
+        StepMotor_Data[mi].SetSpeed=STEPMOTOR_MAX_SETSPEED;
       //当前速度与设定速度不相等，且达到一定的时间间隔后,才递增或递减至设定转速
       if((StepMotor_Data[mi].CurrSpeed != StepMotor_Data[mi].SetSpeed)&&(adjcnt > STEPMOTOR_ADJSPEED_SPACE))   
       { 
@@ -1035,18 +1058,28 @@ void StepMotor_PWM_TIM_IRQ(StepMotor_TypeDef Motorx)
  { 
     TIM_ClearITPendingBit(StepMotor_Tim[Motorx], TIM_IT_Update );
     StepMotor_Data[Motorx].Flow++;      //流量脉累计
+#ifdef MOTOR_TEST_MODE_EN               //测试模式
+    if(StepMotor_Data[Motorx].TestMode == ENABLE)
+    {
+      if(StepMotor_Data[Motorx].Flow >= (StepMotor_Data[Motorx].TestNum*STEPMOTOR_PWMPULSE))   //到达指定圈数，停机
+      {
+        StepMotor_Data[Motorx].Enable = DISABLE;
+        StepMotor_Data[Motorx].SetSpeed = 0;
+        StepMotor_Data[Motorx].TestMode = DISABLE;
+        StepMotor_Data[Motorx].TestNum = 0;
+        StepMotor_Data[Motorx].Flow = 0;
+        
+      }
+    }
+#endif
 #ifdef MOTOR_PWM_LOCKROTOR_CHECK_EN        //判断是否堵转
     StepMotor_Data[Motorx].FlowLockRotor++;
     pulse_encoder = STEPMOTOR_PWMPULSE / ENCODER[Motorx];  //每一个旋转编码器脉冲对应的PWM发出脉冲数 = 12800/齿数
-    if(StepMotor_Data[Motorx].Flow==StepMotor_Data[Motorx].Pluse)    //JK
-    {
-     StepMotor_Data[Motorx].Enable =  DISABLE;
-    }
     if(StepMotor_Data[Motorx].FlowLockRotor > (pulse_encoder + (pulse_encoder >> 1))) //超出每齿脉冲数的50%后判断一次是否堵转
     { //步时脉冲个数超出 标准数量的1.5倍后，判断是否有堵转
       if(StepMotor_Data[Motorx].LockRotorSpeed == 0)
       {
-        StepMotor_Data[Motorx].LockRotor = 1; //堵转
+//        StepMotor_Data[Motorx].LockRotor = 1; //堵转
       }
       else
       {

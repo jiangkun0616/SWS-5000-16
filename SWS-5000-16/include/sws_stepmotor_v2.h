@@ -28,7 +28,7 @@
 #define MOTOR_REALSPEED_CHECK_EN      //马达真实转速检测有效(检测方式为霍尔或编码盘)
 #define MOTOR_PWM_IRQ_EN              //配置PWM的TIM中断有效，主要用于流量脉冲累计
 #define MOTOR_PWM_LOCKROTOR_CHECK_EN  //在PWM中断检测堵转有效(条件：MOTOR_REALSPEED_CHECK_EN和MOTOR_PWM_IRQ_EN必须有效)
-
+#define MOTOR_TEST_MODE_EN           //测试模式（按固定转速，转一定的转数）有效（条件MOTOR_PWM_IRQ_EN必须有效）
 
 /*************定义步进脉冲的TIM系数****************
   *已知条件有：细分度=64;步距角=1.8度;SetSpeed为转速(fload型),单位为rpm;PWM的TIM的工作时钟为72Mhz则有：
@@ -65,8 +65,9 @@ typedef struct
     u8  Braking;     //强制制动(泵盖等)引脚的状态：1=制动有效;0=不制动,正常运行
     u8  RunSta_Brak; //暂存强制制动(泵盖等)前泵的工作状态,待取消强制制动后,自动恢复运行
     u8  LockRotor;   //堵转：1=堵转报警,0=正常
+    u8  TestMode;    // 读写：测试模式 1= 有效
+    float TestNum;   //写：测试模式时需要转动的转数
     u32 Flow;        //流量累计(PWM脉冲(中断)累计)
-    u32 Pluse;       //脉冲个数，jk
     u32 FlowLockRotor;   //堵转检测用的PWM脉冲计数
     u32 LockRotorSpeed;  //堵转检测用的实际转速检测计数，即编码盘或HALL信号
     float RealSpeed;       //真实转速(rpm) - 通过转速检测信号实测得到的转速
@@ -74,8 +75,8 @@ typedef struct
     u8  RatioSwitch;      //泵管系数测试开关
     u8  Down_Mode;        //下行运转模式(00正常,01管路安装,10泵管系数测试，11自检模式)
     u8  Up_Mode;
-    u16  Ratio;            //泵管系数ml/R
-    u16  SetFlow;          //设定流量(0~100ml/h*10)放大10倍
+    float  Ratio;            //泵管系数ml/R
+    float  SetFlow;          //设定流量(0~100ml/h*10)放大10倍
 }StepMotor_WorkInfo_Def;
 
 /**************** 系统中使用的步进电机泵的枚举定义 - 根据实际个数修改，最多为6个 *******************/
@@ -83,10 +84,10 @@ typedef struct
 #define MOTOR_TOTAL   5   //系统中实际使用的电机总个数 [必须一致]
 typedef enum   
 {
-  UFP = 0,   //  - 为MOTOR1
-  BPP,       //  - 为MOTOR2
+  UFP = 0,   //  - 为MOTOR1    超滤泵
+  BPP,       //  - 为MOTOR2    血浆泵
   SBP,       //    - 为MOTOR3
-  SFP,       //   - 为MOTOR4
+  SFP,       //   - 为MOTOR4   功能泵
   HP,        //   - 为MOTOR5
 }StepMotor_TypeDef;
 
@@ -290,6 +291,13 @@ typedef enum
 #define  MOTOR4_BOTTOM_PIN     0
 #define  MOTOR5_BOTTOM_PIN     GPIO_Pin_2
 #define  MOTOR6_BOTTOM_PIN     0
+ //允许到底自动停泵: 1=自动停止;0=到底后不停,转动测试模式设定的转数后,再停止
+#define  MOTOR1_BOTTOM_STOP_EN      1    //
+#define  MOTOR2_BOTTOM_STOP_EN      1    //
+#define  MOTOR3_BOTTOM_STOP_EN      1    //
+#define  MOTOR4_BOTTOM_STOP_EN      1    //
+#define  MOTOR5_BOTTOM_STOP_EN      0    //
+#define  MOTOR6_BOTTOM_STOP_EN      1    //
 #endif 
 /**************** 强制制动(泵盖等)检测引脚定义 输入GPIO  --可修改, 未使用的定义为0  **********/
 #ifdef MOTOR_BRAKING_EN   //强制刹车功能有效

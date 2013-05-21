@@ -19,36 +19,37 @@
 ******************************************************************************/
 void SetupClock (void)
 {
-  ErrorStatus HSEStartUpStatus;
-  RCC_DeInit();              //时钟系统复位
-  RCC_HSEConfig(RCC_HSE_ON); //开外部高速时钟
-  HSEStartUpStatus = RCC_WaitForHSEStartUp();
-  if(HSEStartUpStatus == SUCCESS)
-  {
-    RCC_HCLKConfig(RCC_SYSCLK_Div1); 
-    
-    RCC_PCLK2Config(RCC_HCLK_Div1); 
-    
-    RCC_PCLK1Config(RCC_HCLK_Div2);
-    
-    FLASH_SetLatency(FLASH_Latency_2);
-    
-    FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);
-    
-    RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_9);	//8X9=72MHz
-    
-    RCC_PLLCmd(ENABLE);
-    
-    while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET)
-    {
-    }
-    
-    RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
-    
-    while(RCC_GetSYSCLKSource() != 0x08)
-    {
-    }
-  }
+//  ErrorStatus HSEStartUpStatus;
+//  RCC_DeInit();              //时钟系统复位
+//  RCC_HSEConfig(RCC_HSE_ON); //开外部高速时钟
+//  HSEStartUpStatus = RCC_WaitForHSEStartUp();
+//  if(HSEStartUpStatus == SUCCESS)
+//  {
+//    RCC_HCLKConfig(RCC_SYSCLK_Div1); 
+//    
+//    RCC_PCLK2Config(RCC_HCLK_Div1); 
+//    
+//    RCC_PCLK1Config(RCC_HCLK_Div2);
+//    
+//    FLASH_SetLatency(FLASH_Latency_2);
+//    
+//    FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);
+//    
+//    RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_9);	//8X9=72MHz
+//    
+//    RCC_PLLCmd(ENABLE);
+//    
+//    while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY) == RESET)
+//    {
+//    }
+//    
+//    RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK);
+//    
+//    while(RCC_GetSYSCLKSource() != 0x08)
+//    {
+//    }
+//  }
+  SystemInit();
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2|RCC_APB1Periph_TIM6, ENABLE);    //TIM6-判断485数据的帧
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2|RCC_APB1Periph_TIM3|RCC_APB1Periph_TIM4|RCC_APB1Periph_TIM5, ENABLE);
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1|RCC_APB2Periph_TIM8, ENABLE); 
@@ -230,8 +231,8 @@ void System_Init(void)
   SetupClock ();
   GPIO_Config();
   SetNVIC();
-  SPI_Config();
- // TIM1_Configuration();
+//  SPI_Config();
+// TIM1_Configuration();
 
 }
 
